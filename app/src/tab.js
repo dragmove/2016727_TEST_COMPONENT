@@ -115,96 +115,29 @@
       console.log('activateNaviCallback - _obj :', _obj);
     }
 
-    // setPep();
-    // setPersonalImplementation();
-    setPersonalImplementation();
-  }
-
-  function setPersonalImplementation() {
     /*
-    $('.wrap-scroll').on('touchstart', function(evt) {
-      console.log('down :', evt);
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-      evt.preventDefault();
-    });
+    //activate 3rd btn
+    tab.activate(3);
 
-    $('.wrap-scroll').on('touchmove', function(evt) {
-      console.log('move :', evt);
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-      evt.preventDefault();
-    });
+    //get activated index
+    console.log( 'after call "tab.activate(3)", print "tab.getActivatedIndex()" :', tab.getActivatedIndex() );
 
-    $('.wrap-scroll').on('touchend', function(evt) {
-      console.log('up :', evt);
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-      evt.preventDefault();
-    });
+    window.tab = tab;
     */
+
+    // setPep();
+    setPrivatePep();
   }
 
-  function subscribe() {
-    $('.wrap-scroll').on('touchstart', function handleStart(evt) {
+  function setPrivatePep() {
+    $('.wrap-scroll').throw({
+      
     });
   }
 
-  function isValidMoveEvent(evt) {
-    return ( !isTouch(evt) || ( isTouch(evt) && evt.originalEvent && evt.originalEvent.touches && evt.originalEvent.touches.length === 1 ) );
-  }
-
-  function isTouch(evt) {
-    return evt.type.search('touch') > -1;
-  }
-
-  function normalizeEvent(evt) {
-    var obj = {
-      x: 0,
-      y: 0,
-      type: ''
-    };
-
-    if( isTouch(evt) ) {
-      obj.x = evt.originalEvent.touches[0].pageX;
-      obj.y = evt.originalEvent.touches[0].pageY;
-      obj.type = evt.type;
-
-    } else if ( isPointerEventCompatible() || !isTouch ) {
-      if(evt.pageX) {
-        obj.x = obj.pageX;
-        obj.y = obj.pageY;
-      } else {
-        obj.x = evt.originalEvent.pageX;
-        obj.y = evt.originalEvent.pageY;
-      }
-      obj.type = evt.type;
-    }
-
-    return obj;
-  }
-
-  function isPointerEventCompatible() {
-    return ('MSPointerEvent' in window);
-  }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  /*
   function setPep() {
     var $scrollTabs = $('.wrap-scroll').pep({
       initiate: function(evt){
@@ -241,15 +174,8 @@
       }
     });
     // $.pep.unbind($scrollTabs);
-
-    /*
-    //activate 3rd btn
-    tab.activate(3);
-
-    //get activated index
-    console.log( 'after call "tab.activate(3)", print "tab.getActivatedIndex()" :', tab.getActivatedIndex() );
-
-    window.tab = tab;
-    */
   }
+  */
 }(jQuery));
+
+
