@@ -1,6 +1,10 @@
-(function($) {
-  "use strict";
 
+/*
+ * nc.rwd.Tab
+ */
+;(function($, window) {
+  "use strict";
+  
   if(!window.nc) window.nc = {};
   if(!nc.rwd) nc.rwd = {};
 
@@ -92,11 +96,41 @@
     this._activateCallback = null;
     this._activateIndex = 0;
   };
+}(jQuery, window));
+
+(function($, window, isMobile) {
+  "use strict";
+
+
 
   /*
    * implementation
    */
-  var tab = null;
+  var RESIZE_TIMEOUT_DELAY = 50;
+  var resizeTimeout = null;
+
+  var $win = $(window),
+    tab = null,
+    scrollTabControl = null;
+
+
+  var utils = {
+    matrixToArray: function(str) {
+      return str.split('(')[1].split(')')[0].split(',');
+    },
+    arrayToMatrix: function(array) {
+      return 'matrix(' +  array.join(',')  + ')';
+    },
+    transformMatrix: function(element, matrixStr) {
+      $(element).css({
+        '-webkit-transform': matrixStr,
+           '-moz-transform': matrixStr,
+            '-ms-transform': matrixStr,
+             '-o-transform': matrixStr,
+                'transform': matrixStr
+      });
+    }
+  };
 
   $(document).ready(init);
 
@@ -125,57 +159,72 @@
     window.tab = tab;
     */
 
-    // setPep();
-    setPrivatePep();
-  }
+    scrollTabControl = setPepScrollTab();
 
-  function setPrivatePep() {
-    $('.wrap-scroll').throw({
-      
+    $win.on('resize orientationchange', function(evt) {
+      if(resizeTimeout) window.clearTimeout(resizeTimeout);
+
+      resizeTimeout = window.setTimeout(function() {
+        setScrollTabPosition();
+        scrollTabControl = setPepScrollTab(true);
+      }, RESIZE_TIMEOUT_DELAY);
     });
   }
 
+  function setScrollTabPosition() {
+    var scrollWrap = $('.wrap-scroll'),
+      parentWidth = scrollWrap.parent().width();
 
+    var matrix = scrollWrap.css('-webkit-transform') ||
+      this.$el.css('-moz-transform') ||
+      this.$el.css('-ms-transform') ||
+      this.$el.css('-o-transform') ||
+      this.$el.css('transform');
+    if(matrix === 'none') matrix = 'matrix(1, 0, 0, 1, 0, 0)';
 
-  /*
-  function setPep() {
-    var $scrollTabs = $('.wrap-scroll').pep({
+    var matrixArr = utils.matrixToArray(matrix),
+      x = parseInt(matrixArr[4], 10),
+      left = parseInt( scrollWrap.css('left'), 0 );
+
+    /*
+    if( x + scrollWrap.outerWidth() > parentWidth ) {
+      //var posX = parentWidth - scrollWrap.outerWidth() - left;
+      //if( posX <= 0 ) posX = 0;
+
+      //matrixArr[4] = posX;
+      //utils.transformMatrix( scrollWrap, utils.arrayToMatrix(matrixArr) );
+    }
+    */
+  }
+
+  function setPepScrollTab(isReset) {
+    if(isReset) $.pep.unbind(scrollTabControl);
+
+    var scrollWrap = $('.wrap-scroll');
+
+    var draggableLeftRange = scrollWrap.parent().width() - scrollWrap.outerWidth(),
+      constrainTo = (draggableLeftRange >= 0) ? 'parent' : [0, 0, 0, draggableLeftRange];
+
+    var scrollControl = $('.wrap-scroll').pep({
       initiate: function(evt){
-        console.log('initiate');
-        console.log('evt :', evt);
-        evt.preventDefault();
-        evt.stopPropagation();
       },
       start: function(evt){
-        console.log('start');
-        evt.preventDefault();
-        evt.stopPropagation();
       },
       drag: function(evt){
-        console.log('drag');
-        evt.preventDefault();
-        evt.stopPropagation();
       },
       stop: function(evt){
-        console.log('stop');
-        evt.preventDefault();
-        evt.stopPropagation();
       },
       rest: function(evt){
-        console.log('rest');
-        evt.preventDefault();
-        evt.stopPropagation();
       },
-      constrainTo: [0, 0, 0, -100],
-      axis: 'x',
-      startPos: {
-        left: null, 
-        top: null
-      }
+      // moveTo: function() {}, 
+      cssEaseDuration: 750,
+      shouldPreventDefault: (isMobile.any) ? false : true,
+      allowDragEventPropagation: true,
+      constrainTo: constrainTo
     });
-    // $.pep.unbind($scrollTabs);
+
+    return scrollControl;
   }
-  */
-}(jQuery));
+}(jQuery, window, isMobile));
 
 
