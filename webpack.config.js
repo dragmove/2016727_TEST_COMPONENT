@@ -20,7 +20,8 @@ module.exports = {
 
     entry: {
     	main: ['webpack/hot/dev-server'/*, 'babel-polyfill'*/, './app/src/main.js'],
-        tab: ['webpack/hot/dev-server'/*, 'babel-polyfill'*/, './app/src/tab.js']
+      tab: ['webpack/hot/dev-server'/*, 'babel-polyfill'*/, './app/src/tab.js'],
+      custom: ['webpack/hot/dev-server'/*, 'babel-polyfill'*/, './app/src/custom.js']
     },
 
     output: {
