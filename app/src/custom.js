@@ -133,8 +133,33 @@
     });
   }
 
+
+
+
+
+  /*
+   * ScrollControl
+   */
   function ScrollControl(options) {
+    this.stylePrefix = {
+      transition: this.getPrefixedStylePropName('transition'),
+      transform: this.getPrefixedStylePropName('transform'),
+      perspective: this.getPrefixedStylePropName('perspective'),
+      backfaceVisibility: this.getPrefixedStylePropName('backfaceVisibility')
+    };
+
+    this.$doc = $(document);
     this.$el = $(options.element);
+    this.el = this.$el.get(0);
+
+    this.velocityStack = new Array(5);
+
+    this.offset = {
+      diff: {x: 0, y: 0}, // mouse.x - el.x
+      
+      mouse: {x: 0, y: 0}, // mouse cursor position
+      el: {x: 0, y: 0} // element translate
+    };
 
     this.dragging = false;
 
@@ -143,15 +168,38 @@
 
   ScrollControl.prototype.init = function() {
     this.disableSelect();
+    this.setHardwareAcceleration(this.el);
+
+    this.setTransition(this.el, 0, 'cubic-bezier(0.23, 1, 0.32, 1)'); // cubic-bezier(0.23, 1, 0.32, 1)
+    this.setTranslateX(this.el, this.offset.el.x);
 
     this.$el.on('mousedown', $.proxy(this.dragstart, this));
-    this.$el.on('mousemove', $.proxy(this.dragmove, this));
-    this.$el.on('mouseup', $.proxy(this.dragend, this));
+  };
+
+  ScrollControl.prototype.setTransition = function(element, duration, ease) {
+    $(element).css(this.stylePrefix.transition, ['all', duration + 'ms', ease].join(' '));
+  };
+
+  ScrollControl.prototype.setTranslateX = function(element, x) {
+    var transform = '';
+    transform =  'translateX(' + x + 'px)';
+    $(element).css(this.stylePrefix.transform, transform);
   };
 
   ScrollControl.prototype.dragstart = function(evt) {
     evt.preventDefault();
     evt.stopPropagation();
+
+    this.setTransition(this.el, 0, 'cubic-bezier(0.23, 1, 0.32, 1)');
+
+    this.$doc.on('mousemove', $.proxy(this.dragmove, this));
+    this.$doc.on('mouseup', $.proxy(this.dragend, this));
+    this.$doc.on('mouseleave', $.proxy(this.dragleave, this));
+
+    this.offset.mouse.x = evt.pageX;
+
+    this.offset.diff.x = this.offset.mouse.x - this.offset.el.x;
+    console.log('this.offset.diff.x :', this.offset.diff.x);
 
     this.dragging = true;
   };
@@ -161,9 +209,18 @@
     evt.stopPropagation();
 
     if(!this.dragging) return;
-
-    console.log(evt);
+    console.log('dragmove');
     // TODO
+
+    this.offset.mouse.x = evt.pageX;
+    this.offset.el.x = this.offset.mouse.x - this.offset.diff.x;
+
+    this.addVelocityPoint({
+      timestamp: evt.timeStamp,
+      x: this.offset.mouse.x
+    })
+
+    this.setTranslateX(this.el, this.offset.el.x);
   };
 
   ScrollControl.prototype.dragend = function(evt) {
@@ -171,7 +228,72 @@
     evt.stopPropagation();
 
     this.dragging = false;
+
+    var velocityX = this.getVelocity().x * 0.5;
+    console.log('this.offset.el.x :', this.offset.el.x);
+    console.log('velocityX :', velocityX);
+
+    this.offset.el.x += velocityX;
+    console.log('this.offset.el.x :', this.offset.el.x);
+
+    this.setTransition(this.el, 500, 'cubic-bezier(0.23, 1, 0.32, 1)');
+    this.setTranslateX(this.el, parseInt(this.offset.el.x, 10));
+
+    this.$doc.off('mousemove', $.proxy(this.dragmove, this));
+    this.$doc.off('mouseup', $.proxy(this.dragend, this));
+    this.$doc.off('mouseleave', $.proxy(this.dragleave, this));
+
+    this.resetVelocityStack();
+  };
+
+  ScrollControl.prototype.getVelocity = function() {
+    var stack = this.velocityStack;
+
+    var sumX = 0;
+    for(var i=0,max=stack.length-1; i<max; i++) {
+      if( stack[i] ) {
+        sumX += (stack[i+1].x - stack[i].x)
+      }
+    }
+
+    return {
+      x: sumX
+    };
+  };
+
+  ScrollControl.prototype.dragleave = function(evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+
+    this.dragging = false;
     // TODO
+
+    console.log('dragleave');
+
+    this.$doc.off('mousemove', $.proxy(this.dragmove, this));
+    this.$doc.off('mouseup', $.proxy(this.dragend, this));
+    this.$doc.off('mouseleave', $.proxy(this.dragleave, this));
+  };
+
+  ScrollControl.prototype.resetVelocityStack = function() {
+    this.velocityStack = new Array(5);
+  };
+
+  ScrollControl.prototype.addVelocityPoint = function(val) {
+    var arr = this.velocityStack;
+    arr = arr.slice(1, arr.length);
+    arr.push(val);
+    
+    this.velocityStack = arr;
+
+    console.log('this.velocityStack :', this.velocityStack);
+  };
+
+  ScrollControl.prototype.setHardwareAcceleration = function(element) {
+    if (this.stylePrefix.backfaceVisibility && this.stylePrefix.perspective) {
+      element.style[this.stylePrefix.perspective] = '1000px';
+      element.style[this.stylePrefix.backfaceVisibility] = 'hidden';
+    }
   };
 
   ScrollControl.prototype.disableSelect = function() {
@@ -183,6 +305,20 @@
       '-ms-user-select' : 'none',
       'user-select' : 'none'
     });
+  };
+
+  ScrollControl.prototype.getPrefixedStylePropName = function(propName) {
+    var domPrefixes = 'Webkit Moz ms O'.split(' '),
+      elStyle = document.documentElement.style;
+
+    if (elStyle[propName] !== undefined) return propName; // Is supported unprefixed
+
+    propName = propName.charAt(0).toUpperCase() + propName.substr(1);
+    for (var i = 0; i < domPrefixes.length; i++) {
+      if (elStyle[domPrefixes[i] + propName] !== undefined) {
+        return domPrefixes[i] + propName; // Is supported with prefix
+      }
+    }
   };
 
 

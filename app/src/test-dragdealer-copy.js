@@ -97,6 +97,10 @@
   };
 }(jQuery, window));
 
+
+
+
+
 (function ($, window) {
   "use strict";
 
@@ -108,8 +112,8 @@
   function init() {
     setTab();
 
-    canvasMask = new Dragdealer( $('.wrap-scroll-tabs').get(0), {
-      handleClass: 'wrap-scroll',
+    canvasMask = new Dragdealer( $('.wrap-scroll-tabs'), {
+      handle: $('.wrap-scroll'),
 
       disabled: false,
       horizontal: true,
@@ -127,10 +131,15 @@
     });
 
     /*
+    var event = $.Event('mousedown', {
+
+    })
+    */
+
+    /*
     canvasMask.disable();
     canvasMask.enable();
     */
-    console.log('canvasMask.getValue() :', canvasMask.getValue());
   }
 
   function testDragdealer(x, y) {
