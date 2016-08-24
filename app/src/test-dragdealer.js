@@ -11,6 +11,7 @@
     if (!options) return;
 
     this._activeClass = options.activeClass || 'on';
+    this._wrap = options.wrap || null;
     this._btns = options.btns || [];
     this._activateCallback = options.activateCallback || null;
     this._activateIndex = 0;
@@ -68,6 +69,10 @@
   /*
    * public methods
    */
+  nc.rwd.Tab.prototype.getWrap = function() {
+    return this._wrap;
+  };
+
   nc.rwd.Tab.prototype.getBtn = function (index) {
     var index = index - 1;
     if (index < 0) return null;
@@ -76,6 +81,10 @@
 
   nc.rwd.Tab.prototype.getActivatedIndex = function () {
     return this._activateIndex;
+  };
+
+  nc.rwd.Tab.prototype.getBtnLength = function() {
+    return $(this._btns).length || 0;
   };
 
   nc.rwd.Tab.prototype.activate = function (index) {
@@ -97,50 +106,139 @@
   };
 }(jQuery, window));
 
-(function ($, window) {
+;(function ($, isMobile, window) {
   "use strict";
 
+  var $window = $(window);
+
+  var isCanvasMaskUsable = false;
+
   var tab,
+    tabWrap,
     canvasMask;
 
   $(document).ready(init);
 
   function init() {
+
+    console.log('isMobile.any :', isMobile.any);
+    
     setTab();
 
-    canvasMask = new Dragdealer( $('.wrap-scroll-tabs').get(0), {
-      handleClass: 'wrap-scroll',
+    tabWrap = tab.getWrap();
 
-      disabled: false,
-      horizontal: true,
-      vertical: false,
-
-      slide: true,
-      loose: true,
-
-      speed: 0.3,
-      css3: true,
-
-      callback: function(x, y) {
-        console.log(x, y);
-      }
-    });
+    $window.on('resize orientationchange', resize);
+    resize();
 
     /*
     canvasMask.disable();
     canvasMask.enable();
     */
-    console.log('canvasMask.getValue() :', canvasMask.getValue());
+
+    // TEST
+    if(canvasMask) {
+      console.log('canvasMask.getValue() :', canvasMask.getValue());
+    }
+
+    setTestBtns();
   }
 
-  function testDragdealer(x, y) {
+  function setTestBtns() {
+    $('.test-btns a').on('click', function (event) {
+      event.preventDefault();
+
+      var target = $(event.currentTarget),
+        index = parseInt(target.text(), 10);
+      activateTabByExternal(index);
+    });
+  }
+
+  function activateTabByExternal(index) {
+    if(tab) tab.activate(index);
+
+    if(isCanvasMaskUsable) {
+      if( index < 1 || index > tab.getBtnLength() ) return;
+
+      var prev = (index <= 1) ? 0 : index - 1,
+        next = (index >= tab.getBtnLength()) ? 0 : index + 1;
+
+      if(!prev) {
+        // go to left end
+        setDragDealerPosition(0, 0);
+        return;
+      }
+
+      if(!next) {
+        // go to right end
+        canvasMask.setValue(1, 0);
+        return;
+      }
+
+      var tabBtn = $(tab.getBtn(prev));
+      if(tabBtn.length) setDragDealerPosition( -tabBtn.position().left, 0 );
+    }
+  }
+
+  function resize() {
+    console.log('resize');
+
+    if ( tabWrap.width() > window.innerWidth ) {
+      createCanvasMask();
+    } else {
+      if(canvasMask) {
+        canvasMask.disable();
+        isCanvasMaskUsable = false;
+
+        setDragDealerPosition(0, 0);
+      }
+    }
+  }
+
+  function createCanvasMask() {
+    if(!canvasMask) {
+      console.log('create canvas mask.');
+
+      canvasMask = new Dragdealer( $('.slidetab').get(0), {
+        handleClass: 'slidetab__handle',
+
+        disabled: false,
+        horizontal: true,
+        vertical: false,
+
+        slide: true,
+        loose: true,
+
+        speed: 0.3,
+        css3: true,
+
+        callback: function(x, y) {
+          console.log(x, y);
+        }
+      });
+    } else {
+      canvasMask.enable();
+    }
+
+    
+    if(!isMobile.any) {
+      // desktop - disable drag
+      canvasMask.disable();
+    }
+
+    isCanvasMaskUsable = true;
+  }
+
+  function setDragDealerPosition(x, y) {
     var offset = canvasMask.getRatiosByOffsets([x, 0]);
+    console.log('offset :', offset);
+
     canvasMask.setValue( offset[0], offset[1] );
   }
 
   function setTab() {
     tab = new nc.rwd.Tab({
-      btns: $('.tabs li a'),
+      wrap: $('.slidetab__tab'),
+      btns: $('.slidetab__tab li a'),
       activateCallback: activateNaviCallback,
       activeClass: 'on'
     });
@@ -150,5 +248,5 @@
     }
   }
 
-  window.testDragdealer = testDragdealer;
-}(jQuery, window));
+  window.setDragDealerPosition = setDragDealerPosition;
+}(jQuery, isMobile, window));

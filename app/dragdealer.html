@@ -19,25 +19,20 @@
         background-color: #7f7f7f;
       }
 
-      .wrap-scroll-tabs {
+      .slidetab {
         position: relative;
         width: 100%;
         height: 50px;
         overflow: hidden;
-        
-        /*
-        overflow-x: scroll;
-        overflow-y: hidden;
-        */
       }
 
-      .wrap-scroll {
+      .slidetab__handle {
         position: absolute;
         top: 0;
         left: 0;
       }
 
-      .tabs {
+      .slidetab__tab {
         display: block;
         position: relative;
         margin: 0;
@@ -45,19 +40,20 @@
         white-space: nowrap;
       }
 
-      .tabs:after {
+      .slidetab__tab:after {
         content: "";
         display: block;
         clear: both;
       }
 
-      .tabs li {
+      .slidetab__tab li {
         display: inline-block;
         height: 50px;
         line-height: 50px;
+        outline: 1px solid #006666;
       }
 
-      .tabs li a {
+      .slidetab__tab li a {
         display:block;
         margin-left: 0;
         margin-right: 0;
@@ -68,7 +64,7 @@
         text-align: center;
       }
 
-      .tabs li a.on {
+      .slidetab__tab li a.on {
         color: #f00;
       }
 
@@ -83,50 +79,42 @@
     <div id="wrapper">
       <div class="test-ele"></div>
 
-        <div class="wrap-scroll-tabs">
-          <div class="wrap-scroll handle">
-            <ul class="tabs">
-              <li>
-                <a href="#">tab 1</a>
-              </li>
-              <li>
-                <a href="#">tab 2</a>
-              </li>
-              <li>
-                <a href="#">tab 3</a>
-              </li>
-              <li>
-                <a href="#">tab 4</a>
-              </li>
-              <li>
-                <a href="#">tab 5</a>
-              </li>
-              <li>
-                <a href="#">tab 6</a>
-              </li>
-              <li>
-                <a href="#">tab 7</a>
-              </li>
-              <li>
-                <a href="#">tab 8</a>
-              </li>
-              <li>
-                <a href="#">tab 9</a>
-              </li>
-              <li>
-                <a href="#">tab 10</a>
-              </li>
-              <li>
-                <a href="#">tab 11</a>
-              </li>
+
+
+
+        <div class="slidetab">
+          <div class="slidetab__handle">
+            <ul class="slidetab__tab">
+              <li><a href="#">마이 리니지</a></li><li><a href="#">커뮤니티</a></li><li><a href="#">시세</a></li><li><a href="#">파워북</a></li><li><a href="#">쿠폰함</a></li><li><a href="#">봉인해제주문서</a></li><li><a href="#">신규 혜택</a></li><li><a href="#">복귀 혜택</a></li><li><a href="#">계정 보안</a></li><li><a href="#">복귀용사지침서</a></li>
             </ul>
           </div>
+        </div>
+
+
+
+
+
+      <div>
+        contents
       </div>
 
+      <div class="test-btns">
+        <a href="#">1</a>
+        <a href="#">2</a>
+        <a href="#">3</a>
+        <a href="#">4</a>
+        <a href="#">5</a>
+        <a href="#">6</a>
+        <a href="#">7</a>
+        <a href="#">8</a>
+        <a href="#">9</a>
+        <a href="#">10</a>
+      </div>
     </div>
 
     <script type="text/javascript" src="lib/jquery-1.12.2.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="lib/dragdealer.js" charset="utf-8"></script>
+    <script type="text/javascript" src="lib/isMobile.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="src/test-dragdealer.js" charset="utf-8"></script>
   </body>
 </html>
